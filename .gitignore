@@ -1,0 +1,21 @@
+# Build output
+target/
+
+# IDE settings
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS junk
+.DS_Store
+
+# Secrets and local config
+.env
+*.env
+application-local.yml
+
+# Logs
+*.log
