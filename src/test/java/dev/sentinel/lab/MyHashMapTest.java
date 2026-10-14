@@ -87,4 +87,12 @@ class MyHashMapTest {
         assertTrue(map.containsKey("a"));
         assertNull(map.get("a"));
     }
+
+    @Test
+    void growsWhenLoadFactorExceeded() {
+        var map = new MyHashMap<Integer, Integer>();
+        assertEquals(16, map.capacity());
+        for (int i = 0; i < 100; i++) map.put(i, i);
+        assertTrue(map.capacity() > 16);
+    }
 }

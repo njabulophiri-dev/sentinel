@@ -1,7 +1,5 @@
 package dev.sentinel.lab;
 
-import dev.sentinel.Node;
-
 /**
  * Week 1, Day 2: build your own HashMap.
  *
@@ -48,6 +46,9 @@ public class MyHashMap<K, V> {
         }
         buckets[index] = new Node<>(key, value, buckets[index]);
         size++;
+        if (size > buckets.length * LOAD_FACTOR) {
+            resize();
+        }
         return null;
     }
 
@@ -103,13 +104,30 @@ public class MyHashMap<K, V> {
         return size;
     }
 
+    int capacity() {
+        return buckets.length;
+    }
+
     /** Which bucket does this key belong in? Think about negative hash codes. */
     private int indexFor(K key, int capacity) {
         return Math.floorMod(key.hashCode(), capacity);
     }
 
     private void resize() {
-        // TODO: new array of double size; every entry must be re-hashed, not copied by index
-        throw new UnsupportedOperationException("TODO");
+        Node<K, V>[] oldBuckets = buckets;
+        int newCapacity = 2*capacity();
+        Node<K, V>[] newBuckets = (Node<K, V>[]) new Node[newCapacity];
+
+        for (int i = 0; i < oldBuckets.length; i++) {
+            Node<K, V> current = oldBuckets[i];
+            while (current != null) {
+                Node<K, V> next = current.next;
+                int index = indexFor(current.key, newCapacity);
+                current.next = newBuckets[index];
+                newBuckets[index] = current;
+                current = next;
+            }
+        }
+        buckets = newBuckets;
     }
 }
