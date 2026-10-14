@@ -65,14 +65,38 @@ public class MyHashMap<K, V> {
     }
 
     public boolean containsKey(K key) {
-        // TODO
-        throw new UnsupportedOperationException("TODO");
+        int index = indexFor(key, buckets.length);
+        Node<K, V> current = buckets[index];
+        while (current != null) {
+            if (current.key.equals(key)) {
+                return true;
+            }
+            current = current.next;
+        }
+        return false;
     }
+
 
     /** Removes the key. Returns the removed value, or null if the key was absent. */
     public V remove(K key) {
-        // TODO: careful with removing the head of a chain vs. a middle node
-        throw new UnsupportedOperationException("TODO");
+        int index = indexFor(key, buckets.length);
+        Node<K, V> previous = null;
+        Node<K, V> current = buckets[index];
+        while (current != null) {
+            if (current.key.equals(key)) {
+                if (previous == null) {
+                    buckets[index] = current.next;
+                } else {
+                    previous.next = current.next;
+                }
+                size--;
+                return current.value;
+            }
+            previous = current;
+            current = current.next;
+        }
+        return null;
+
     }
 
     public int size() {
