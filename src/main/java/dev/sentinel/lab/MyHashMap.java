@@ -1,5 +1,7 @@
 package dev.sentinel.lab;
 
+import dev.sentinel.Node;
+
 /**
  * Week 1, Day 2: build your own HashMap.
  *
@@ -34,14 +36,32 @@ public class MyHashMap<K, V> {
 
     /** Insert or overwrite. Returns the previous value, or null if the key was new. */
     public V put(K key, V value) {
-        // TODO: 1) find bucket index  2) walk the chain  3) overwrite or prepend  4) resize if needed
-        throw new UnsupportedOperationException("TODO");
+        int index = indexFor(key, buckets.length);
+        Node<K, V> current = buckets[index];
+        while (current != null) {
+            if (current.key.equals(key)) {
+                V old = current.value;
+                current.value = value;
+                return old;
+            }
+            current = current.next;
+        }
+        buckets[index] = new Node<>(key, value, buckets[index]);
+        size++;
+        return null;
     }
 
     /** Returns the value for the key, or null if absent. */
     public V get(K key) {
-        // TODO
-        throw new UnsupportedOperationException("TODO");
+        int index = indexFor(key, buckets.length);
+        Node<K, V> current = buckets[index];
+        while (current != null) {
+            if (current.key.equals(key)) {
+                return current.value;
+            }
+            current = current.next;
+        }
+        return null;
     }
 
     public boolean containsKey(K key) {
@@ -61,8 +81,7 @@ public class MyHashMap<K, V> {
 
     /** Which bucket does this key belong in? Think about negative hash codes. */
     private int indexFor(K key, int capacity) {
-        // TODO
-        throw new UnsupportedOperationException("TODO");
+        return Math.floorMod(key.hashCode(), capacity);
     }
 
     private void resize() {
