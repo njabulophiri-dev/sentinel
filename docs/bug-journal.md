@@ -22,3 +22,12 @@
 - *Fix:* current.next = newNode; then return.
 - *Lesson:* Creating an object doesn't put it where you need it. You must connect it.
 - *Layman's version:* Building a carriage and leaving it in the yard instead of coupling it to the train.
+
+# 14 Oct 2026: cannot find symbol: variable current
+- *Symptom:* 6 compile errors, all "cannot find symbol: current".
+- *Hypothesis:* The variable wasn't declared in put.
+- *What I tried:* Read the first error's line number and checked the line above.
+- *Root cause:* The declaration line was missing from the saved file.
+- *Fix:* Added Node<K, V> current = buckets[index]; and saved.
+- *Lesson:* Fix the first compile error first; the rest are often echoes.
+- *Layman's version:* Calling someone by name before introducing them.
