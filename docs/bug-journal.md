@@ -31,3 +31,22 @@
 - *Fix:* Added Node<K, V> current = buckets[index]; and saved.
 - *Lesson:* Fix the first compile error first; the rest are often echoes.
 - *Layman's version:* Calling someone by name before introducing them.
+
+## 19 Oct 2026: Two commits missed the pull request
+- *Symptom:* main was missing the .gitignore change and journal update.
+- *Hypothesis:* I pushed to the branch after the PR was merged.
+- *What I tried:* git log main..origin/week-1/my-hashmap to list commits main lacked.
+- *Root cause:* Commits made after merging a PR don't join it.
+- *Fix:* Opened a second small PR and merged it.
+- *Lesson:* Before deleting a branch, check that main already has all its commits.
+- *Layman's version:* Mailing a parcel, then finding two items still on your desk.
+
+## 19 Oct 2026: No tests to run after switching branch
+- *Symptom:* mvn test said "No tests to run"; it compiled 6 files instead of 8.
+- *Hypothesis:* The test files weren't on this branch.
+- *What I tried:* Compared the file counts in the Maven output.
+- *Root cause:* Branched from main before the HashMap branch was merged into it.
+- *Fix:* Merged the HashMap branch into main, then main into the CLI branch.
+- *Lesson:* Merge finished work into main before starting the next branch.
+- *Layman's version:* Starting a new notebook before copying the old notes into the main binder.
+
