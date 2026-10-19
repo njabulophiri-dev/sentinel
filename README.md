@@ -20,7 +20,7 @@ mvn spring-boot:run         # the API (health: http://localhost:8080/actuator/he
 ## Run the Day 1 demo
 ```
 mvn -q compile
-java -cp target/classes dev.sentinel.Day1
+java -cp target/classes dev.sentinel.lab.AmountRuleDemo
 ```
 
 ## Run the tests
