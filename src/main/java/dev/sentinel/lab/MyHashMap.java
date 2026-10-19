@@ -11,6 +11,7 @@ package dev.sentinel.lab;
  *
  * Work through MyHashMapTest one test at a time: make one go green, then the next.
  */
+@SuppressWarnings("unchecked")
 public class MyHashMap<K, V> {
 
     private static final int INITIAL_CAPACITY = 16;
