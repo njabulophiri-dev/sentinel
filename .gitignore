@@ -8,6 +8,7 @@ target/
 .classpath
 .project
 .settings/
+*.class
 
 # OS junk
 .DS_Store
