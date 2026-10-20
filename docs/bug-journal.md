@@ -50,3 +50,12 @@
 - *Lesson:* Merge finished work into main before starting the next branch.
 - *Layman's version:* Starting a new notebook before copying the old notes into the main binder.
 
+## 20 Oct 2026: Trailing comma slipped past the field count
+- *Symptom:* "T010,Spar,Groceries," reported "got 3 fields" instead of a missing amount.
+- *Hypothesis:* split(",") drops empty trailing fields.
+- *What I tried:* Predicted the message, wrote a failing test then ran it.
+- *Root cause:* String.split(",") removes trailing empty strings by default.
+- *Fix:* line.split(",", -1) keeps them.
+- *Lesson:* A library default can hide bad input; test the edges.
+- *Layman's version:* A counting machine that skips empty seats at the end of a row.
+
