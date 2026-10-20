@@ -10,7 +10,7 @@ public class TransactionParser {
             throw new TransactionParseException("Line is null or blank");
         }
 
-        String[] parts = line.split(",");
+        String[] parts = line.split(",", -1);
         if (parts.length != 4) {
             throw new TransactionParseException(
                     "Expected 4 fields, got " + parts.length + " in: " + line);
@@ -34,14 +34,16 @@ public class TransactionParser {
             throw new TransactionParseException(
                     "Invalid amount: " + parts[3].trim(), e);
         }
-        if (amount.signum() <= 0 || amount.scale() > 2)
-            throw new TransactionParseException("Invalid amount: " + parts[3].trim());
+        if (amount.signum() <= 0)
+            throw new TransactionParseException("Amount must be positive: " + parts[3].trim());
+        if (amount.scale() > 2)
+            throw new TransactionParseException("Amount has more than 2 decimal places: " + parts[3].trim());
 
         return new Transaction(id, merchant, category, amount);
     }
 
     public static void main(String[] args) {
-        String line = "t001 , Spar, Groceries, 100.00 ";
+        String line = "t001 , Spar, Groceries, ";
         System.out.println(parse(line));
     }
 }
