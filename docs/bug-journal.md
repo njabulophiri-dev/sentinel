@@ -59,3 +59,12 @@
 - *Lesson:* A library default can hide bad input; test the edges.
 - *Layman's version:* A counting machine that skips empty seats at the end of a row.
 
+## 21 Oct 2026: Compile error is not a failing test
+- *Symptom:* Maven said COMPILATION ERROR at TotalsReportTest line 20.
+- *Hypothesis:* A syntax mistake around line 19 or 20 from an edit.
+- *What I tried:* Fixed the file until it compiled again.
+- *Root cause:* Not recorded. The file wasn't committed, so I can't see what changed.
+- *Fix:* File compiled again after my edits.
+- *Lesson:* A compile error means no tests ran. Commit working code before experimenting, so a diff can show what broke.
+- *Layman's version:* A smoke alarm with no battery: silence doesn't mean there's no fire.
+
