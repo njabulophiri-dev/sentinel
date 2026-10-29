@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: Sentinel API
+  version: 0.1.0
+  description: Real-time fraud assessment for payment transactions.
+servers:
+  - url: http://localhost:8080
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/auth/login:
+    post:
+      summary: Exchange a username and password for a token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Token issued, content: { application/json: { schema: { $ref: '#/components/schemas/TokenResponse' } } } }
+        '401': { $ref: '#/components/responses/Problem' }
+  /api/v1/transactions:
+    post:
+      summary: Assess a transaction (roles SERVICE, ADMIN)
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, maxLength: 100 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IngestRequest' }
+      responses:
+        '201': { description: Assessed and stored, content: { application/json: { schema: { $ref: '#/components/schemas/Transaction' } } } }
+        '200': { description: Replay of an earlier request with the same key and body (header Idempotent-Replay is true) }
+        '400': { $ref: '#/components/responses/Problem' }
+        '409': { description: Idempotency-Key was used with a different body }
+    get:
+      summary: List transactions, newest first (roles ANALYST, ADMIN)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 0 } }
+        - { name: size, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: A page of transactions }
+  /api/v1/transactions/{id}:
+    get:
+      summary: Get one transaction with its reasons (roles ANALYST, ADMIN)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: The transaction, content: { application/json: { schema: { $ref: '#/components/schemas/Transaction' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/alerts:
+    get:
+      summary: List alerts, newest first (roles ANALYST, ADMIN)
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [OPEN, CONFIRMED_FRAUD, FALSE_POSITIVE] } }
+        - { name: page, in: query, schema: { type: integer, default: 0 } }
+        - { name: size, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200': { description: A page of alerts }
+  /api/v1/alerts/{id}:
+    get:
+      summary: Get one alert (roles ANALYST, ADMIN)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200': { description: The alert }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/v1/alerts/{id}/resolution:
+    post:
+      summary: Resolve an open alert (roles ANALYST, ADMIN)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResolveRequest' }
+      responses:
+        '200': { description: The resolved alert }
+        '409': { description: Already resolved, or changed by someone else }
+  /api/v1/blacklist:
+    get:
+      summary: List blacklist entries (role ADMIN)
+      responses:
+        '200': { description: All entries, newest first }
+    post:
+      summary: Add a blacklist entry (role ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BlacklistRequest' }
+      responses:
+        '201': { description: Created }
+        '409': { description: Already blacklisted }
+  /api/v1/blacklist/{id}:
+    delete:
+      summary: Remove a blacklist entry (role ADMIN)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Removed }
+        '404': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Problem:
+      description: Error in RFC 7807 problem format
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      properties:
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        errors: { type: object, additionalProperties: { type: string } }
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string }
+    TokenResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresInSeconds: { type: integer }
+        role: { type: string, enum: [ADMIN, ANALYST, SERVICE] }
+    IngestRequest:
+      type: object
+      required: [externalId, accountId, merchantId, amount, currency, country, occurredAt]
+      properties:
+        externalId: { type: string, maxLength: 64 }
+        accountId: { type: string, maxLength: 64, description: An opaque account token. Never send a card number. }
+        merchantId: { type: string, maxLength: 64 }
+        amount: { type: number, minimum: 0.01, description: At most 2 decimal places }
+        currency: { type: string, pattern: '^[A-Z]{3}$', example: ZAR }
+        country: { type: string, pattern: '^[A-Z]{2}$', example: ZA }
+        deviceId: { type: string, maxLength: 64 }
+        occurredAt: { type: string, format: date-time }
+    Transaction:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        decision: { type: string, enum: [APPROVE, REVIEW, DECLINE] }
+        riskScore: { type: integer, minimum: 0, maximum: 100 }
+        reasons:
+          type: array
+          items:
+            type: object
+            properties:
+              ruleId: { type: string }
+              score: { type: integer }
+              reason: { type: string }
+    ResolveRequest:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [CONFIRMED_FRAUD, FALSE_POSITIVE] }
+        note: { type: string, maxLength: 500 }
+    BlacklistRequest:
+      type: object
+      required: [kind, value]
+      properties:
+        kind: { type: string, enum: [ACCOUNT, MERCHANT, DEVICE] }
+        value: { type: string, maxLength: 64 }
+        reason: { type: string, maxLength: 200 }

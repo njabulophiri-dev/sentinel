@@ -1,0 +1,10 @@
+# LOCAL DEVELOPMENT ONLY. These secrets are public because they are in Git.
+# Never use this profile, or these values, anywhere real.
+sentinel:
+  security:
+    jwt-secret: dev-only-secret-do-not-use-in-production-0123456789
+    allowed-origins: http://localhost:5173,http://localhost:3000
+  bootstrap:
+    admin-password: admin-dev-pass
+    analyst-password: analyst-dev-pass
+    service-password: service-dev-pass

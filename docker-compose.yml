@@ -1,3 +1,5 @@
+# Whole stack:   docker compose up --build      (dashboard on http://localhost:3000)
+# Database only: docker compose up -d postgres  (then run the API from your IDE or `mvn spring-boot:run`)
 services:
   postgres:
     image: postgres:16
@@ -14,6 +16,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev   # local development only: public secrets, see application-dev.yml
+      DB_URL: jdbc:postgresql://postgres:5432/sentinel
+      DB_USER: sentinel
+      DB_PASSWORD: sentinel_dev_only
+    ports:
+      - "8080:8080"
+
+  web:
+    build: ./frontend
+    depends_on:
+      - app
+    ports:
+      - "3000:80"
 
 volumes:
   pgdata:

@@ -7,13 +7,50 @@ spring:
     password: ${DB_PASSWORD:sentinel_dev_only}
   jpa:
     hibernate:
-      ddl-auto: validate   # Flyway owns the schema; Hibernate only checks it
+      ddl-auto: validate   # Flyway owns the schema; Hibernate only checks that it matches
     open-in-view: false
   flyway:
     enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  shutdown: graceful
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+
+sentinel:
+  security:
+    # Required, at least 32 bytes. The app refuses to start without it.
+    jwt-secret: ${SENTINEL_JWT_SECRET:}
+    token-ttl: 15m
+    allowed-origins: ${SENTINEL_ALLOWED_ORIGINS:}
+  bootstrap:
+    # A blank password means "do not create this user".
+    admin-password: ${SENTINEL_ADMIN_PASSWORD:}
+    analyst-password: ${SENTINEL_ANALYST_PASSWORD:}
+    service-password: ${SENTINEL_SERVICE_PASSWORD:}
+  fraud:
+    review-threshold: 40
+    decline-threshold: 80
+    high-amount: 5000
+    very-high-amount: 50000
+    velocity-max-count: 5
+    velocity-window: 10m
+    country-window: 60m
+    new-device-min-amount: 1000
+    card-testing-count: 4
+    card-testing-max-amount: 20
+    card-testing-window: 10m
