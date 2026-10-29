@@ -1,0 +1,9 @@
+# Used by the integration tests only.
+sentinel:
+  security:
+    jwt-secret: test-only-secret-0123456789-0123456789-abcdef
+    allowed-origins: http://localhost:5173
+  bootstrap:
+    admin-password: admin-test-pass
+    analyst-password: analyst-test-pass
+    service-password: service-test-pass
