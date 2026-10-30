@@ -25,9 +25,9 @@ flowchart LR
 2. Bean Validation checks the body: positive amount, at most 2 decimals, ISO currency and country codes.
 3. `IngestionService` looks the key up. A repeat of the same request returns the stored result. The same key with a different body is a `409`.
 4. It loads the account's recent history, known devices and blacklist matches (a handful of indexed queries).
-5. It hands that data to `FraudEngine` as a `RiskContext`. Each rule returns a score and a human-readable reason, or nothing. Scores add up, capped at 100.
+5. It hands that data to `FraudEngine` as a `RiskContext`. Each rule returns a score and a human-readable reason or nothing. Scores add up, capped at 100.
 6. The total maps to a decision: below 40 approve, 40 to 79 review, 80 and above decline.
-7. The transaction, every rule hit, and (for review or decline) an alert are saved in one database transaction.
+7. The transaction, every rule hit and (for review or decline) an alert are saved in one database transaction.
 8. The response includes the decision, the score and the reasons.
 
 ## Layers
@@ -69,4 +69,4 @@ Tokens are signed JWTs (HS256) that expire after 15 minutes. See ADR-006.
 
 ## Not built yet
 
-Kafka for asynchronous processing, Redis for hot counters, webhooks with the outbox pattern, load tests, and a Grafana dashboard. The current design keeps the database as the single source of truth, which is the right starting point; see the roadmap in the README.
+Kafka for asynchronous processing, Redis for hot counters, webhooks with the outbox pattern, load tests and a Grafana dashboard. The current design keeps the database as the single source of truth, which is the right starting point; see the roadmap in the README.
