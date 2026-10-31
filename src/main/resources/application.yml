@@ -2,7 +2,8 @@ spring:
   application:
     name: sentinel
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/sentinel}
+    # Either set DB_URL in full, or DB_HOST / DB_PORT / DB_NAME (handy on hosts that give you the parts).
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sentinel}}
     username: ${DB_USER:sentinel}
     password: ${DB_PASSWORD:sentinel_dev_only}
   jpa:
@@ -15,6 +16,7 @@ spring:
     default-property-inclusion: non_null
 
 server:
+  port: ${PORT:8080}   # some hosts tell the app which port to use
   shutdown: graceful
 
 management:
@@ -42,6 +44,13 @@ sentinel:
     admin-password: ${SENTINEL_ADMIN_PASSWORD:}
     analyst-password: ${SENTINEL_ANALYST_PASSWORD:}
     service-password: ${SENTINEL_SERVICE_PASSWORD:}
+  login-throttle:
+    max-failures-per-user: 5
+    max-failures-per-ip: 30
+    window: 10m
+  demo:
+    # Loads a small story of sample transactions into an EMPTY database. For demos only.
+    seed: ${SENTINEL_DEMO_SEED:false}
   fraud:
     review-threshold: 40
     decline-threshold: 80

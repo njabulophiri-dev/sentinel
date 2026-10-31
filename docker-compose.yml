@@ -1,4 +1,4 @@
-# Whole stack:   docker compose up --build      (dashboard on http://localhost:3000)
+# Whole stack:   docker compose up --build      (API and dashboard on http://localhost:8080)
 # Database only: docker compose up -d postgres  (then run the API from your IDE or `mvn spring-boot:run`)
 services:
   postgres:
@@ -29,13 +29,6 @@ services:
       DB_PASSWORD: sentinel_dev_only
     ports:
       - "8080:8080"
-
-  web:
-    build: ./frontend
-    depends_on:
-      - app
-    ports:
-      - "3000:80"
 
 volumes:
   pgdata:

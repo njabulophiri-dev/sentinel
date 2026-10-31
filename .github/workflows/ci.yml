@@ -34,3 +34,11 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+
+  # The Docker image is what actually gets deployed, so prove it builds on every change.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the production image
+        run: docker build -t sentinel:ci .
