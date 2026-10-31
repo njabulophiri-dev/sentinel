@@ -1,0 +1,49 @@
+# Render Blueprint: one web service (API + dashboard in a single container) and one PostgreSQL database.
+# Check Render's current plans and limits before relying on this. See docs/DEPLOYMENT.md.
+databases:
+  - name: sentinel-db
+    plan: free
+    databaseName: sentinel
+    user: sentinel
+
+services:
+  - type: web
+    name: sentinel
+    runtime: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: sentinel-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: sentinel-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: sentinel-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: sentinel-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: sentinel-db
+          property: password
+      - key: SENTINEL_JWT_SECRET
+        generateValue: true
+      - key: SENTINEL_ADMIN_PASSWORD
+        generateValue: true
+      - key: SENTINEL_SERVICE_PASSWORD
+        generateValue: true
+      - key: SENTINEL_ANALYST_PASSWORD   # the password you will publish for the demo account
+        sync: false
+      - key: SENTINEL_DEMO_SEED
+        value: "true"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"

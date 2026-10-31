@@ -1,0 +1,24 @@
+# Production settings. Activate with SPRING_PROFILES_ACTIVE=prod.
+# There are deliberately NO secrets in this file: everything sensitive must come from the environment.
+spring:
+  datasource:
+    password: ${DB_PASSWORD}   # no default: the app fails to start if it is missing
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:5}   # small pool: cheap databases allow few connections
+  jpa:
+    show-sql: false
+
+server:
+  # The host's proxy terminates HTTPS. "native" lets Tomcat read X-Forwarded-For and X-Forwarded-Proto
+  # (only from private-range proxies), so the login throttle sees the real client address.
+  forward-headers-strategy: native
+
+logging:
+  structured:
+    format:
+      console: ecs   # one JSON object per log line, with the request id included
+
+management:
+  endpoint:
+    health:
+      show-details: never
