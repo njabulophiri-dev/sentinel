@@ -7,7 +7,7 @@ Risky transactions land in a queue where analysts confirm fraud or clear them.
 
 **Stack:** Java 21, Spring Boot 3.5, PostgreSQL, Flyway, Spring Security (JWT), React + TypeScript, Docker, GitHub Actions.
 
-**Live demo:** see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how it is deployed (add the link here once it is live).
+**Live demo:** see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how it is deployed (link will be here once it is live).
 
 ## What it does
 
@@ -22,7 +22,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and [`docs/ope
 
 ## Run it
 
-You need JDK 21, Maven 3.9+, Docker, and Node 22 (for the dashboard).
+You need JDK 21, Maven 3.9+, Docker and Node 22 (for the dashboard).
 
 **Everything in containers**
 
@@ -97,8 +97,4 @@ Architecture decision records live in [`docs/adr/`](docs/adr/). The bug journal 
 ## Roadmap
 
 Not built yet: Kafka for asynchronous processing, Redis for hot counters and shared login throttling,
-webhooks with the outbox pattern, refresh tokens, load tests, and a Grafana dashboard.
-
-## How this was built
-
-Parts of this codebase were written with an AI assistant (Claude), then reviewed, run and extended by the author.
+webhooks with the outbox pattern, refresh tokens, load tests and a Grafana dashboard.
