@@ -35,9 +35,7 @@ export function App() {
       <header className="topbar">
         <h1>Sentinel</h1>
         <div className="who">
-          <span>
-            {session.username} ({session.role.toLowerCase()})
-          </span>
+          <span>{session.role.toLowerCase()}</span>
           <button className="link" onClick={signOut}>
             Sign out
           </button>
