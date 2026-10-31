@@ -27,6 +27,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/sentinel
       DB_USER: sentinel
       DB_PASSWORD: sentinel_dev_only
+      SENTINEL_DEMO_SEED: ${SENTINEL_DEMO_SEED:-false}
     ports:
       - "8080:8080"
 
