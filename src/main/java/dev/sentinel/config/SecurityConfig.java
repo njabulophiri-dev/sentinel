@@ -77,6 +77,8 @@ class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/v1/auth/login", "/actuator/health/**", "/actuator/info", "/error").permitAll()
+                        // The dashboard is bundled into the jar; its files are public, the data behind them is not.
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/transactions").hasAnyRole("SERVICE", "ADMIN")
                         .requestMatchers("/api/v1/blacklist/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/**").hasRole("ADMIN")

@@ -101,6 +101,19 @@ class SentinelApiIT {
     }
 
     @Test
+    void repeatedWrongPasswordsAreThrottled() throws Exception {
+        String attempt = "{\"username\":\"throttle-victim\",\"password\":\"wrong\"}";
+        for (int i = 0; i < 5; i++) {
+            mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(attempt))
+                    .andExpect(status().isUnauthorized());
+        }
+        mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(attempt))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().exists("Retry-After"))
+                .andExpect(jsonPath("$.title").value("Too many attempts"));
+    }
+
+    @Test
     void anAnalystCannotIngestTransactions() throws Exception {
         MvcResult result = ingest(analyst(), UUID.randomUUID().toString(),
                 body(account(), "100.00", "ZA", "DEV-1", Instant.now()));

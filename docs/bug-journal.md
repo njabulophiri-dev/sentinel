@@ -68,3 +68,12 @@
 - *Lesson:* A compile error means no tests ran. Commit working code before experimenting, so a diff can show what broke.
 - *Layman's version:* A smoke alarm with no battery: silence doesn't mean there's no fire.
 
+## 31 Oct 2026: Demo flag never reached the app
+- *Symptom:* Started compose with SENTINEL_DEMO_SEED=true but the dashboard had no alerts and the log had no "Demo data loaded" line.
+- *Hypothesis:* The seeder was broken or the flag never arrived.
+- *What I tried:* Looked for "Demo data loaded" in the log, then re-read docker-compose.yml.
+- *Root cause:* I added the variable under the postgres service instead of the app service, so the app never received it.
+- *Fix:* Moved SENTINEL_DEMO_SEED: ${SENTINEL_DEMO_SEED:-false} to the app service's environment.
+- *Lesson:* When a setting seems ignored, check it reached the right place before suspecting the code. Indentation decides which service owns a line.
+- *Layman's version:* Posting a letter to the wrong flat in the same building.
+

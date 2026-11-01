@@ -51,6 +51,13 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return problem(HttpStatus.CONFLICT, "Conflict", ex.getMessage());
     }
 
+    @ExceptionHandler(ApiErrors.TooManyRequests.class)
+    ResponseEntity<ProblemDetail> tooManyRequests(ApiErrors.TooManyRequests ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.retryAfterSeconds()))
+                .body(problem(HttpStatus.TOO_MANY_REQUESTS, "Too many attempts", ex.getMessage()));
+    }
+
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     ProblemDetail concurrentUpdate(ObjectOptimisticLockingFailureException ex) {
         return problem(HttpStatus.CONFLICT, "Conflict", "Someone else changed this record. Reload and try again.");

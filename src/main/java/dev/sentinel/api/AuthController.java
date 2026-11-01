@@ -3,6 +3,7 @@ package dev.sentinel.api;
 import dev.sentinel.api.ApiModels.LoginRequest;
 import dev.sentinel.api.ApiModels.TokenResponse;
 import dev.sentinel.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,7 @@ class AuthController {
     }
 
     @PostMapping("/login")
-    TokenResponse login(@Valid @RequestBody LoginRequest request) {
-        return auth.login(request);
+    TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+        return auth.login(request, http.getRemoteAddr());
     }
 }

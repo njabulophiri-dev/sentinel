@@ -59,7 +59,9 @@ The schema is owned by Flyway migrations (`src/main/resources/db/migration`). Hi
 | `ANALYST` | Read transactions and alerts, resolve alerts |
 | `ADMIN` | Everything, plus blacklist management and metrics |
 
-Tokens are signed JWTs (HS256) that expire after 15 minutes. See ADR-006.
+Tokens are signed JWTs (HS256) that expire after 15 minutes. See ADR-006. Repeated failed sign-ins are throttled: see ADR-008.
+
+In production the dashboard is bundled into the jar, so one container serves both the UI and the API. See ADR-009 and `docs/DEPLOYMENT.md`.
 
 ## Operations
 
@@ -69,4 +71,4 @@ Tokens are signed JWTs (HS256) that expire after 15 minutes. See ADR-006.
 
 ## Not built yet
 
-Kafka for asynchronous processing, Redis for hot counters, webhooks with the outbox pattern, load tests and a Grafana dashboard. The current design keeps the database as the single source of truth, which is the right starting point; see the roadmap in the README.
+Kafka for asynchronous processing, Redis for hot counters and shared login throttling, webhooks with the outbox pattern, refresh tokens, load tests and a Grafana dashboard. The current design keeps the database as the single source of truth, which is the right starting point; see the roadmap in the README.

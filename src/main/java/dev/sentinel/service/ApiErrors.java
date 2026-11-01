@@ -19,4 +19,16 @@ public final class ApiErrors {
     public static class Conflict extends RuntimeException {
         public Conflict(String message) { super(message); }
     }
+
+    /** The caller has tried too often and must wait (HTTP 429). */
+    public static class TooManyRequests extends RuntimeException {
+        private final long retryAfterSeconds;
+
+        public TooManyRequests(String message, long retryAfterSeconds) {
+            super(message);
+            this.retryAfterSeconds = retryAfterSeconds;
+        }
+
+        public long retryAfterSeconds() { return retryAfterSeconds; }
+    }
 }
