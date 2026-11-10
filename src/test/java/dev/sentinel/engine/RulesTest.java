@@ -76,6 +76,13 @@ class RulesTest {
         assertTrue(velocity.evaluate(context(TestData.plain(), recentPayments(10, 30))).isEmpty());
     }
 
+    @Test
+    void velocityUsesDatabaseCountSignals() {
+        RiskContext c = new RiskContext(TestData.plain(), List.of(), Set.of(), Set.of(),
+                new RiskHistory(5, 0, null, false, false));
+        assertTrue(velocity.evaluate(c).orElseThrow().reason().contains("6 transactions"));
+    }
+
     // ── CountryChangeRule ─────────────────────────────────────────
 
     private final CountryChangeRule countryChange = new CountryChangeRule(Duration.ofMinutes(60), 45);
@@ -99,6 +106,13 @@ class RulesTest {
     void countryChangeIgnoresOldTransactions() {
         assertTrue(countryChange.evaluate(
                 context(TestData.plain(), List.of(minutesAgo("R", 120, "100.00", "GB")))).isEmpty());
+    }
+
+    @Test
+    void countryChangeUsesDatabaseCountrySignal() {
+        RiskContext c = new RiskContext(TestData.plain(), List.of(), Set.of(), Set.of(),
+                new RiskHistory(0, 0, "GB", false, false));
+        assertTrue(countryChange.evaluate(c).orElseThrow().reason().contains("GB"));
     }
 
     // ── BlacklistRule ─────────────────────────────────────────────
@@ -157,6 +171,13 @@ class RulesTest {
         assertTrue(newDevice.evaluate(c).isEmpty());
     }
 
+    @Test
+    void newDeviceUsesDatabaseDeviceSignals() {
+        RiskContext c = new RiskContext(tx("A", "1500.00", "ZA", "DEV-NEW", NOW), List.of(), Set.of(), Set.of(),
+                new RiskHistory(0, 0, null, true, false));
+        assertEquals(25, newDevice.evaluate(c).orElseThrow().score());
+    }
+
     // ── CardTestingRule ───────────────────────────────────────────
 
     private final CardTestingRule cardTesting =
@@ -179,6 +200,13 @@ class RulesTest {
     void cardTestingIgnoresALargePaymentEvenAfterSmallOnes() {
         TxFacts large = tx("A", "500.00", "ZA", "DEV-1", NOW);
         assertTrue(cardTesting.evaluate(context(large, recentPayments(5, 2, "5.00"))).isEmpty());
+    }
+
+    @Test
+    void cardTestingUsesDatabaseCountSignals() {
+        RiskContext c = new RiskContext(tx("A", "5.00", "ZA", "DEV-1", NOW), List.of(), Set.of(), Set.of(),
+                new RiskHistory(0, 3, null, false, false));
+        assertEquals(40, cardTesting.evaluate(c).orElseThrow().score());
     }
 
     private static List<TxFacts> recentPayments(int count, int minutesAgo, String amount) {

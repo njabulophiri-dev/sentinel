@@ -17,4 +17,5 @@ refuses to start if it is shorter than 32 bytes. Login takes the same time wheth
 - No custom security filter code to maintain or audit.
 - Tokens cannot be revoked before they expire. Short lifetimes limit the damage, and refresh tokens are not implemented yet.
 - A shared secret means every service that validates tokens can also forge them. Moving to an external identity provider (RS256 and a JWKS endpoint) is the next step if more services are added.
-- There is no login rate limiting yet. It is on the roadmap and should be added before any public deployment.
+- Login attempts are throttled with shared PostgreSQL counters (see ADR-008); an external identity provider
+  or step-up authentication would further reduce distributed password-guessing risk.

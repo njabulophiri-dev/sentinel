@@ -3,8 +3,12 @@ import { decisionLabel, formatDateTime, formatMoney, statusLabel } from './forma
 
 describe('format', () => {
   it('always shows two decimal places', () => {
-    expect(formatMoney(7500, 'ZAR')).toBe('ZAR 7500.00');
-    expect(formatMoney('199.9', 'ZAR')).toBe('ZAR 199.90');
+    expect(formatMoney(7500, 'ZAR')).toContain('7 500,00');
+    expect(formatMoney('199.9', 'ZAR')).toContain('199,90');
+  });
+
+  it('keeps malformed monetary values visible instead of rendering NaN', () => {
+    expect(formatMoney('invalid', 'ZAR')).toBe('ZAR invalid');
   });
 
   it('labels every decision in plain words', () => {

@@ -7,3 +7,5 @@ sentinel:
     admin-password: admin-test-pass
     analyst-password: analyst-test-pass
     service-password: service-test-pass
+  login-throttle:
+    max-failures-per-account: 6

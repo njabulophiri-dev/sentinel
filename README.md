@@ -7,16 +7,18 @@ Risky transactions land in a queue where analysts confirm fraud or clear them.
 
 **Stack:** Java 21, Spring Boot 3.5, PostgreSQL, Flyway, Spring Security (JWT), React + TypeScript, Docker, GitHub Actions.
 
-**Live demo:** see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how it is deployed (link will be here once it is live).
+**Live demo:** see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how it is deployed (https://sentinel-gq67.onrender.com/).
 
 ## What it does
 
 - **Fraud engine:** six rules (high amount, velocity, country change, blacklist, new device, card testing). Scores add up to 0-100.
 - **Idempotent ingestion:** retrying a request with the same `Idempotency-Key` never creates a second transaction.
 - **Explainable decisions:** every rule that fired is stored with its score and reason.
-- **Analyst workflow:** an alert queue, a detail view, and confirm-fraud or false-positive resolutions with notes.
+- **Analyst workflow:** an alert queue, a detail view and confirm-fraud or false-positive resolutions with notes.
 - **Security:** JWT login, three roles (service, analyst, admin), BCrypt passwords, login throttling (`429` after repeated failures), CORS allow-list, append-only audit log.
 - **Operations:** health probes, Prometheus metrics, a request id in every log line, graceful shutdown.
+
+**Performance scope:** history lookups use database-side summaries and expose timing metrics, but this project has not been load-tested and publishes no throughput or latency claims.
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and [`docs/openapi.yaml`](docs/openapi.yaml) for the API.
 
@@ -84,7 +86,7 @@ render.yaml                        deployment blueprint for Render
 
 ## Deploy it
 
-[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) has the steps, the environment variables, and a smoke test
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) has the steps, the environment variables and a smoke test
 (`scripts/smoke.sh`) that checks a deployment end to end. The production profile (`prod`) contains no secrets:
 everything sensitive comes from the environment.
 
@@ -96,5 +98,5 @@ Architecture decision records live in [`docs/adr/`](docs/adr/). The bug journal 
 
 ## Roadmap
 
-Not built yet: Kafka for asynchronous processing, Redis for hot counters and shared login throttling,
+Not built yet: Kafka for asynchronous processing, Redis for hot counters,
 webhooks with the outbox pattern, refresh tokens, load tests and a Grafana dashboard.

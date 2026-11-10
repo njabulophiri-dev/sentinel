@@ -22,9 +22,10 @@ flowchart LR
 ## One transaction, step by step
 
 1. The caller sends `POST /api/v1/transactions` with a service token and an `Idempotency-Key`.
-2. Bean Validation checks the body: positive amount, at most 2 decimals, ISO currency and country codes.
+2. Bean Validation checks the body: positive amount, at most 2 decimals, and uppercase currency/country code formats.
 3. `IngestionService` looks the key up. A repeat of the same request returns the stored result. The same key with a different body is a `409`.
-4. It loads the account's recent history, known devices and blacklist matches (a handful of indexed queries).
+4. It queries the account's recent counts, latest country and device history with database-side aggregates and
+   indexed lookups, alongside blacklist matches.
 5. It hands that data to `FraudEngine` as a `RiskContext`. Each rule returns a score and a human-readable reason or nothing. Scores add up, capped at 100.
 6. The total maps to a decision: below 40 approve, 40 to 79 review, 80 and above decline.
 7. The transaction, every rule hit and (for review or decline) an alert are saved in one database transaction.
@@ -66,9 +67,14 @@ In production the dashboard is bundled into the jar, so one container serves bot
 ## Operations
 
 - Health: `/actuator/health` (liveness and readiness probes are enabled).
-- Metrics: `/actuator/prometheus` (admin only), including `sentinel_decisions_total` by decision.
+- Metrics: `/actuator/prometheus` (admin only), including `sentinel_decisions_total` by decision and
+  `sentinel_fraud_history_lookup` duration for database-side fraud-history checks.
 - Every request has an `X-Request-Id`, and the same id appears in every log line for that request.
+- Fraud-history checks use indexed counts, existence checks and a single latest-country lookup rather than
+  loading an account's full history into application memory.
 
 ## Not built yet
 
-Kafka for asynchronous processing, Redis for hot counters and shared login throttling, webhooks with the outbox pattern, refresh tokens, load tests and a Grafana dashboard. The current design keeps the database as the single source of truth, which is the right starting point; see the roadmap in the README.
+Kafka for asynchronous processing, Redis for hot counters, webhooks with the outbox pattern, refresh tokens,
+load tests and a Grafana dashboard. The current design keeps the database as the single source of truth, which
+is the right starting point; see the roadmap in the README.

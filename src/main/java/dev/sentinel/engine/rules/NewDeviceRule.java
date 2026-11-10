@@ -30,7 +30,14 @@ public final class NewDeviceRule implements FraudRule {
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         String device = c.tx().deviceId();
-        if (device == null || c.knownDevices().isEmpty() || c.knownDevices().contains(device)) {
+        if (device == null) {
+            return Optional.empty();
+        }
+        boolean hasKnownDevices = c.history() != null
+                ? c.history().hasPriorDevices() : !c.knownDevices().isEmpty();
+        boolean knownDevice = c.history() != null
+                ? c.history().currentDeviceKnown() : c.knownDevices().contains(device);
+        if (!hasKnownDevices || knownDevice) {
             return Optional.empty();
         }
         if (c.tx().amount().compareTo(minAmount) <= 0) {

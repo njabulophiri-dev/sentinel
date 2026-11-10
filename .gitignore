@@ -7,7 +7,7 @@ dependency-reduced-pom.xml
 hs_err_pid*
 
 # ── Frontend (React + Vite) ──────────────────
-frontend/node_modules/
+node_modules/
 frontend/dist/
 frontend/coverage/
 frontend/.vite/

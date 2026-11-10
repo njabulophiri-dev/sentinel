@@ -94,6 +94,6 @@ Retries are safe because the database enforces one result per key."
 
 ## Honest gaps to be upfront about in interviews
 
-Kafka, Redis, webhooks, load testing and a metrics dashboard are not built. There is no login rate limiting
-or refresh token yet, and rule thresholds are configured by hand rather than learned from data. Knowing
-what is missing, and why, is part of owning the project.
+Kafka, Redis, webhooks, load testing and a Grafana dashboard are not built. Login throttling is backed by shared
+PostgreSQL counters; refresh tokens are not implemented, and rule thresholds are configured by hand rather than
+learned from data. Knowing what is missing, and why, is part of owning the project.
