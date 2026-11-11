@@ -33,19 +33,25 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Assesses a transaction and stores the result, exactly once per Idempotency-Key.
+ * Assesses a transaction and stores the result, exactly once per
+ * Idempotency-Key.
  *
- * <p>Two requests with the same key can arrive at the same moment. Both pass the "have I seen this
- * key?" check, and the database's UNIQUE constraint lets only one insert win. The loser catches the
- * constraint violation and returns the winner's stored result, so the caller sees one transaction.
+ * <p>
+ * Two requests with the same key can arrive at the same moment. Both pass the
+ * "have I seen this
+ * key?" check and the database's UNIQUE constraint lets only one insert win.
+ * The loser catches the
+ * constraint violation and returns the winner's stored result, so the caller
+ * sees one transaction.
  */
 @Service
 public class IngestionService {
 
     private static final Duration MAX_FUTURE_SKEW = Duration.ofMinutes(5);
 
-    /** The stored transaction, and whether it was a replay of an earlier request. */
-    public record Result(TransactionView transaction, boolean replayed) {}
+    /** The stored transaction and whether it was a replay of an earlier request. */
+    public record Result(TransactionView transaction, boolean replayed) {
+    }
 
     private final TransactionRepository transactions;
     private final RuleHitRepository ruleHits;
@@ -59,9 +65,9 @@ public class IngestionService {
     private final TransactionTemplate readTx;
 
     public IngestionService(TransactionRepository transactions, RuleHitRepository ruleHits,
-                            AlertRepository alerts, BlacklistRepository blacklist, FraudEngine engine,
-                            FraudProperties properties, Clock clock, MeterRegistry meters,
-                            PlatformTransactionManager txManager) {
+            AlertRepository alerts, BlacklistRepository blacklist, FraudEngine engine,
+            FraudProperties properties, Clock clock, MeterRegistry meters,
+            PlatformTransactionManager txManager) {
         this.transactions = transactions;
         this.ruleHits = ruleHits;
         this.alerts = alerts;
@@ -75,6 +81,12 @@ public class IngestionService {
         this.readTx.setReadOnly(true);
     }
 
+    /**
+     * Replays the stored result for an identical key and payload; reusing a key for
+     * different transaction data conflicts.
+     * Fraud history is loaded before evaluation so the scoring engine remains
+     * independent of persistence.
+     */
     public Result ingest(String idempotencyKey, IngestRequest request) {
         String hash = RequestHasher.hash(
                 request.externalId(), request.accountId(), request.merchantId(),
@@ -118,7 +130,7 @@ public class IngestionService {
                     transactions.countSmallTransactions(request.accountId(),
                             at.minus(properties.cardTestingWindow()), at, properties.cardTestingMaxAmount()),
                     transactions.findFirstByAccountIdAndCountryNotAndOccurredAtBetweenOrderByOccurredAtDesc(
-                                    request.accountId(), request.country(), at.minus(properties.countryWindow()), at)
+                            request.accountId(), request.country(), at.minus(properties.countryWindow()), at)
                             .map(TransactionEntity::getCountry).orElse(null),
                     transactions.existsByAccountIdAndDeviceIdIsNotNull(request.accountId()),
                     request.deviceId() != null

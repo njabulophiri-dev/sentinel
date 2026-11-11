@@ -41,6 +41,7 @@ public final class CardTestingRule implements FraudRule {
         return window;
     }
 
+    /** Counts the current small payment too; a burst is flagged as soon as the configured count is reached. */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         if (c.tx().amount().compareTo(maxAmount) > 0) {

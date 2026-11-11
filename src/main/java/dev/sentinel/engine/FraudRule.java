@@ -9,6 +9,9 @@ public interface FraudRule {
     /** Stable identifier, stored with every hit so analysts can see which rule fired. */
     String id();
 
+    /**
+     * Returns a hit only when this transaction meets the rule's criteria; a missing hit contributes no risk.
+     */
     Optional<RuleHit> evaluate(RiskContext context);
 
     /** How far back in time this rule needs to see. */
