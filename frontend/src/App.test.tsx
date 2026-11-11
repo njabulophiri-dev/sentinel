@@ -86,6 +86,8 @@ describe('analyst workflow', () => {
 
     expect(await screen.findByRole('heading', { name: 'Risk inbox' })).toBeTruthy();
     expect(await screen.findByRole('button', { name: 'Open alert 41 for account AC-42' })).toBeTruthy();
+    expect(screen.getByText('AC-42')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'AC-42' })).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Fraud' }));
     await waitFor(() => {

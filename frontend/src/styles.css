@@ -249,18 +249,17 @@ td { height: 72px; padding: 11px 16px; border-top: 1px solid #edf1ef; color: #53
 tbody tr { cursor: pointer; transition: background 140ms ease; }
 tbody tr:hover, tbody tr:focus { background: #f7faf8; outline: none; }
 .transaction-cell { display: flex; align-items: center; gap: 10px; }
-.transaction-icon { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #dfebe5; border-radius: 9px; color: #3f806d; background: #f1f7f3; font-size: 15px; }
+.transaction-icon { display: grid; width: 34px; height: 34px; padding: 0; place-items: center; border: 1px solid #dfebe5; border-radius: 9px; color: #3f806d; background: #f1f7f3; font-size: 15px; cursor: pointer; }
+.transaction-icon:hover { border-color: #b7d5c8; background: #e7f2eb; }
+.transaction-icon:focus-visible { outline: 2px solid #398275; outline-offset: 2px; }
 .transaction-cell small { display: block; margin-top: 4px; color: #879493; font-size: 10px; }
-.transaction-link { padding: 0; border: 0; color: #273e3c; background: transparent; font-size: 12px; font-weight: 600; text-align: left; }
-.transaction-link:hover { color: #287668; text-decoration: underline; }
+.transaction-name { color: #273e3c; font-size: 12px; font-weight: 600; }
 .date-cell { color: #73817f; font-size: 11px; }
 .amount-cell { color: #2b403d; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .score-cell { display: flex; align-items: center; gap: 9px; color: #465956; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .score-track, .risk-meter, .preview-meter { display: block; overflow: hidden; border-radius: 9px; background: #e8eeea; }
 .score-track { width: 50px; height: 5px; }
 .score-track span { display: block; height: 100%; border-radius: inherit; background: #d59a53; }
-.row-arrow { color: #82928d; font-size: 15px; transition: color 150ms ease, transform 150ms ease; }
-tbody tr:hover .row-arrow { transform: translateX(2px); color: #398275; }
 .pager { display: flex; min-height: 66px; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 24px; border-top: 1px solid var(--line); }
 .pager-count, .pager-controls > span { color: #778582; font-size: 11px; }
 .pager-count strong { color: #40524e; font-weight: 600; }

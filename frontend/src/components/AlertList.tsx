@@ -125,7 +125,6 @@ export function AlertList({ onOpen, onError }: { onOpen: (id: number) => void; o
                     <th>DECISION</th>
                     <th>RISK SCORE</th>
                     <th>STATUS</th>
-                    <th><span className="sr-only">Open alert</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -133,11 +132,15 @@ export function AlertList({ onOpen, onError }: { onOpen: (id: number) => void; o
                     <tr key={alert.id}>
                       <td>
                         <div className="transaction-cell">
-                          <span className="transaction-icon" aria-hidden="true">↗</span>
+                          <button
+                            className="transaction-icon"
+                            onClick={() => onOpen(alert.id)}
+                            aria-label={`Open alert ${alert.id} for account ${alert.transaction.accountId}`}
+                          >
+                            ↗
+                          </button>
                           <span>
-                            <button className="transaction-link" onClick={() => onOpen(alert.id)} aria-label={`Open alert ${alert.id} for account ${alert.transaction.accountId}`}>
-                              {alert.transaction.accountId}
-                            </button>
+                            <span className="transaction-name">{alert.transaction.accountId}</span>
                             <small>Alert #{alert.id}</small>
                           </span>
                         </div>
@@ -156,7 +159,6 @@ export function AlertList({ onOpen, onError }: { onOpen: (id: number) => void; o
                         </div>
                       </td>
                       <td><span className={`status-label ${alert.status.toLowerCase()}`}>{statusLabel(alert.status)}</span></td>
-                      <td><span className="row-arrow" aria-hidden="true">→</span></td>
                     </tr>
                   ))}
                 </tbody>
