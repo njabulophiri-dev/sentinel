@@ -18,7 +18,7 @@ Risky transactions land in a queue where analysts confirm fraud or clear them.
 - **Security:** JWT login, three roles (service, analyst, admin), BCrypt passwords, login throttling (`429` after repeated failures), CORS allow-list, append-only audit log.
 - **Operations:** health probes, Prometheus metrics, a request id in every log line, graceful shutdown.
 
-**Performance scope:** history lookups use database-side summaries and expose timing metrics, but this project has not been load-tested and publishes no throughput or latency claims.
+**Performance scope:** history lookups use database-side summaries and expose timing metrics but this project has not been load-tested and publishes no throughput or latency claims.
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the design and [`docs/openapi.yaml`](docs/openapi.yaml) for the API.
 
