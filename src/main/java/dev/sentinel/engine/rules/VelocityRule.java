@@ -38,6 +38,9 @@ public final class VelocityRule implements FraudRule {
         return window;
     }
 
+    /**
+     * Counts the incoming transaction as well as prior activity; risk is added only when the count exceeds the limit.
+     */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         if (c.history() != null) {

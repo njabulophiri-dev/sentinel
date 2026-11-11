@@ -27,6 +27,10 @@ public final class NewDeviceRule implements FraudRule {
         return ID;
     }
 
+    /**
+     * Requires prior device history and an amount above the minimum, avoiding false alarms for new accounts
+     * and transactions at the threshold.
+     */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         String device = c.tx().deviceId();

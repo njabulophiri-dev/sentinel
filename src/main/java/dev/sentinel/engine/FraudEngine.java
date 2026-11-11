@@ -48,6 +48,10 @@ public final class FraudEngine {
         return lookback;
     }
 
+    /**
+     * Evaluates every rule so independent risk signals can contribute to one explainable score.
+     * The total is capped at 100; reaching a threshold changes the decision, not the recorded hits.
+     */
     public Assessment assess(RiskContext context) {
         List<RuleHit> hits = new ArrayList<>();
         int total = 0;

@@ -24,6 +24,7 @@ public final class BlacklistRule implements FraudRule {
         return ID;
     }
 
+    /** A match on any blacklist kind triggers one hit, with all matching kinds included in stable order. */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         if (c.blacklisted().isEmpty()) {

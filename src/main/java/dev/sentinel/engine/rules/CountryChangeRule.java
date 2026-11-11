@@ -35,6 +35,7 @@ public final class CountryChangeRule implements FraudRule {
         return window;
     }
 
+    /** Uses the most recent different country in the lookback window as the explainable signal. */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         if (c.history() != null) {

@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-/** Every error leaves the API as RFC 7807 problem JSON, and no stack trace ever reaches a caller. */
+/**
+ * Every error leaves the API as RFC 7807 problem JSON and no stack trace ever
+ * reaches a caller.
+ */
 @RestControllerAdvice
 class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 

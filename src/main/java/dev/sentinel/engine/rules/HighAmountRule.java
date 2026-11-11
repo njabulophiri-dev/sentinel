@@ -31,6 +31,7 @@ public final class HighAmountRule implements FraudRule {
         return ID;
     }
 
+    /** Checks the very-high band first; amounts exactly at either limit do not exceed that limit. */
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
         BigDecimal amount = c.tx().amount();
