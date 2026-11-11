@@ -32,33 +32,36 @@ public class AuthService {
     private final SecurityProperties properties;
     private final AuditService audit;
     private final Clock clock;
-    private final LoginAttemptLimiter ipLimiter;
-    private final LoginAttemptLimiter userLimiter;
+    private final LoginThrottleProperties throttle;
+    private final LoginAttemptStore attempts;
     /** Compared against when the username does not exist, so "no such user" takes as long as "wrong password". */
     private final String dummyHash;
 
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtEncoder jwtEncoder,
                        SecurityProperties properties, LoginThrottleProperties throttle,
-                       AuditService audit, Clock clock) {
+                       AuditService audit, Clock clock, LoginAttemptStore attempts) {
         this.users = users;
         this.encoder = encoder;
         this.jwtEncoder = jwtEncoder;
         this.properties = properties;
         this.audit = audit;
         this.clock = clock;
-        this.ipLimiter = new LoginAttemptLimiter(throttle.maxFailuresPerIp(), throttle.window(), clock);
-        this.userLimiter = new LoginAttemptLimiter(throttle.maxFailuresPerUser(), throttle.window(), clock);
+        this.attempts = attempts;
+        this.throttle = throttle;
         this.dummyHash = encoder.encode("not-a-real-password");
     }
 
     public TokenResponse login(LoginRequest request, String clientIp) {
-        String ipKey = clientIp;
-        String userKey = clientIp + "|" + request.username().toLowerCase(Locale.ROOT);
+        String normalizedUsername = request.username().toLowerCase(Locale.ROOT);
+        String ipKey = "ip|" + clientIp;
+        String userKey = "source-user|" + clientIp + "|" + normalizedUsername;
+        String accountKey = "account|" + normalizedUsername;
 
-        // Refuse before doing any expensive password hashing, so guessing cannot also be used to burn CPU.
-        if (ipLimiter.isBlocked(ipKey) || userLimiter.isBlocked(userKey)) {
-            Duration ipWait = ipLimiter.retryAfter(ipKey);
-            Duration userWait = userLimiter.retryAfter(userKey);
+        boolean ipBlocked = attempts.isBlocked(ipKey, throttle.maxFailuresPerIp(), throttle.window());
+        boolean userBlocked = attempts.isBlocked(userKey, throttle.maxFailuresPerUser(), throttle.window());
+        if (ipBlocked || userBlocked) {
+            Duration ipWait = ipBlocked ? attempts.retryAfter(ipKey) : Duration.ZERO;
+            Duration userWait = userBlocked ? attempts.retryAfter(userKey) : Duration.ZERO;
             Duration wait = ipWait.compareTo(userWait) >= 0 ? ipWait : userWait;
             log.warn("Sign-in throttled for {}", clientIp); // logged, not audited, so an attacker cannot fill the audit table
             throw new ApiErrors.TooManyRequests("Too many failed sign-in attempts. Try again later.",
@@ -68,13 +71,21 @@ public class AuthService {
         UserEntity user = users.findByUsername(request.username()).orElse(null);
         boolean passwordMatches = encoder.matches(request.password(), user != null ? user.getPasswordHash() : dummyHash);
         if (user == null || !user.isEnabled() || !passwordMatches) {
-            ipLimiter.recordFailure(ipKey);
-            userLimiter.recordFailure(userKey);
+            attempts.recordFailure(ipKey, throttle.window());
+            attempts.recordFailure(userKey, throttle.window());
+            attempts.recordFailure(accountKey, throttle.window());
+            if (attempts.isBlocked(accountKey, throttle.maxFailuresPerAccount(), throttle.window())) {
+                Duration wait = attempts.retryAfter(accountKey);
+                log.warn("Account sign-in attempts throttled after repeated invalid credentials");
+                throw new ApiErrors.TooManyRequests("Too many failed sign-in attempts for this account.",
+                        Math.max(1, wait.toSeconds()));
+            }
             audit.record(request.username(), "LOGIN_FAILED", "user:" + request.username(), null);
             throw new BadCredentialsException("Invalid username or password");
         }
 
-        userLimiter.reset(userKey);
+        attempts.reset(userKey);
+        attempts.reset(accountKey);
         Instant now = clock.instant();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("sentinel")

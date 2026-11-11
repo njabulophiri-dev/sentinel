@@ -37,6 +37,12 @@ public final class CountryChangeRule implements FraudRule {
 
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
+        if (c.history() != null) {
+            String otherCountry = c.history().mostRecentOtherCountry();
+            return otherCountry == null ? Optional.empty()
+                    : Optional.of(new RuleHit(ID, score, "Account used in %s and %s within %d minutes"
+                            .formatted(otherCountry, c.tx().country(), window.toMinutes())));
+        }
         Instant from = c.tx().occurredAt().minus(window);
         Optional<TxFacts> other = c.recent().stream()
                 .filter(t -> !t.occurredAt().isBefore(from))

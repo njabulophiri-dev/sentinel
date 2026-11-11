@@ -3,8 +3,8 @@
 Sentinel deploys as **one container** (the API and the dashboard together) plus **one PostgreSQL database**.
 Any host that runs Docker images and offers PostgreSQL will work.
 
-> Hosting plans, free tiers and prices change often. Check the host's current pricing and limits before you
-> commit to one. Nothing here has been tested on a live host yet, so treat the first deployment as a test.
+> Sentinel is deployed on Render. Hosting plans, free tiers and prices change often, so check the host's
+> current pricing and limits before relying on them.
 
 ## Before you deploy
 
@@ -79,7 +79,7 @@ from your phone. The sixth should answer `429`. In the logs, the warning should 
 
 - Link to the live URL and the repository, side by side.
 - Publish only the analyst demo credentials, in the README, with a line saying the data is sample data.
-- Say what it is plainly: a fraud detection API with a dashboard, tested end to end, deployed in one container.
+- Say what it is plainly: a fraud detection API with an analyst dashboard, deployed as one application container plus PostgreSQL. Do not claim high-volume capacity; the project has no load-test results.
 - Mention what is not built (see the roadmap). Interviewers respect honest scope.
 
 ## If something goes wrong

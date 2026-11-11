@@ -25,8 +25,8 @@ public final class ApiModels {
             @NotBlank @Size(max = 64) String accountId,
             @NotBlank @Size(max = 64) String merchantId,
             @NotNull @DecimalMin("0.01") @Digits(integer = 17, fraction = 2) BigDecimal amount,
-            @NotBlank @Pattern(regexp = "[A-Z]{3}", message = "must be a 3-letter ISO currency code") String currency,
-            @NotBlank @Pattern(regexp = "[A-Z]{2}", message = "must be a 2-letter ISO country code") String country,
+            @NotBlank @Pattern(regexp = "[A-Z]{3}", message = "must be a 3-letter uppercase currency code") String currency,
+            @NotBlank @Pattern(regexp = "[A-Z]{2}", message = "must be a 2-letter uppercase country code") String country,
             @Size(max = 64) String deviceId,
             @NotNull Instant occurredAt) {}
 

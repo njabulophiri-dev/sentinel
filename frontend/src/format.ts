@@ -1,7 +1,16 @@
 import type { AlertStatus, Decision } from './types';
 
 export function formatMoney(amount: number | string, currency: string): string {
-  return `${currency} ${Number(amount).toFixed(2)}`;
+  const value = Number(amount);
+  if (!Number.isFinite(value)) {
+    return `${currency} ${amount}`;
+  }
+  return new Intl.NumberFormat('en-ZA', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
 
 export function decisionLabel(decision: Decision): string {

@@ -40,6 +40,13 @@ public final class VelocityRule implements FraudRule {
 
     @Override
     public Optional<RuleHit> evaluate(RiskContext c) {
+        if (c.history() != null) {
+            long inWindow = c.history().recentTransactions() + 1;
+            return inWindow > maxCount
+                    ? Optional.of(new RuleHit(ID, score, "%d transactions in %d minutes (limit %d)"
+                            .formatted(inWindow, window.toMinutes(), maxCount)))
+                    : Optional.empty();
+        }
         Instant from = c.tx().occurredAt().minus(window);
         long inWindow = c.recent().stream().filter(t -> !t.occurredAt().isBefore(from)).count() + 1;
         if (inWindow > maxCount) {

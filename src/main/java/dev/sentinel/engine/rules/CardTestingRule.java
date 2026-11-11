@@ -46,6 +46,14 @@ public final class CardTestingRule implements FraudRule {
         if (c.tx().amount().compareTo(maxAmount) > 0) {
             return Optional.empty();
         }
+        if (c.history() != null) {
+            long small = c.history().recentSmallTransactions() + 1;
+            return small >= count
+                    ? Optional.of(new RuleHit(ID, score,
+                            "%d payments of %s or less in %d minutes (card-testing pattern)"
+                                    .formatted(small, maxAmount.toPlainString(), window.toMinutes())))
+                    : Optional.empty();
+        }
         Instant from = c.tx().occurredAt().minus(window);
         long small = c.recent().stream()
                 .filter(t -> !t.occurredAt().isBefore(from))

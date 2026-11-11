@@ -2,11 +2,13 @@ package dev.sentinel.service;
 
 import dev.sentinel.api.ApiModels.IngestRequest;
 import dev.sentinel.api.ApiModels.TransactionView;
+import dev.sentinel.config.FraudProperties;
 import dev.sentinel.engine.Assessment;
 import dev.sentinel.engine.BlacklistKind;
 import dev.sentinel.engine.Decision;
 import dev.sentinel.engine.FraudEngine;
 import dev.sentinel.engine.RiskContext;
+import dev.sentinel.engine.RiskHistory;
 import dev.sentinel.engine.TxFacts;
 import dev.sentinel.persistence.AlertEntity;
 import dev.sentinel.persistence.AlertRepository;
@@ -16,6 +18,7 @@ import dev.sentinel.persistence.RuleHitRepository;
 import dev.sentinel.persistence.TransactionEntity;
 import dev.sentinel.persistence.TransactionRepository;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -49,6 +52,7 @@ public class IngestionService {
     private final AlertRepository alerts;
     private final BlacklistRepository blacklist;
     private final FraudEngine engine;
+    private final FraudProperties properties;
     private final Clock clock;
     private final MeterRegistry meters;
     private final TransactionTemplate writeTx;
@@ -56,12 +60,14 @@ public class IngestionService {
 
     public IngestionService(TransactionRepository transactions, RuleHitRepository ruleHits,
                             AlertRepository alerts, BlacklistRepository blacklist, FraudEngine engine,
-                            Clock clock, MeterRegistry meters, PlatformTransactionManager txManager) {
+                            FraudProperties properties, Clock clock, MeterRegistry meters,
+                            PlatformTransactionManager txManager) {
         this.transactions = transactions;
         this.ruleHits = ruleHits;
         this.alerts = alerts;
         this.blacklist = blacklist;
         this.engine = engine;
+        this.properties = properties;
         this.clock = clock;
         this.meters = meters;
         this.writeTx = new TransactionTemplate(txManager);
@@ -102,15 +108,27 @@ public class IngestionService {
         TxFacts facts = new TxFacts(id.toString(), request.accountId(), request.merchantId(), request.amount(),
                 request.currency(), request.country(), request.deviceId(), request.occurredAt());
 
-        // One query loads all the history any rule needs; the engine itself never touches the database.
-        Instant from = request.occurredAt().minus(engine.lookback());
-        List<TxFacts> recent = transactions
-                .findByAccountIdAndOccurredAtBetween(request.accountId(), from, request.occurredAt())
-                .stream().map(IngestionService::toFacts).toList();
-        Set<String> knownDevices = transactions.findKnownDevices(request.accountId());
+        Instant at = request.occurredAt();
+        Timer.Sample historyTimer = Timer.start(meters);
+        RiskHistory history;
+        try {
+            history = new RiskHistory(
+                    transactions.countByAccountIdAndOccurredAtBetween(request.accountId(),
+                            at.minus(properties.velocityWindow()), at),
+                    transactions.countSmallTransactions(request.accountId(),
+                            at.minus(properties.cardTestingWindow()), at, properties.cardTestingMaxAmount()),
+                    transactions.findFirstByAccountIdAndCountryNotAndOccurredAtBetweenOrderByOccurredAtDesc(
+                                    request.accountId(), request.country(), at.minus(properties.countryWindow()), at)
+                            .map(TransactionEntity::getCountry).orElse(null),
+                    transactions.existsByAccountIdAndDeviceIdIsNotNull(request.accountId()),
+                    request.deviceId() != null
+                            && transactions.existsByAccountIdAndDeviceId(request.accountId(), request.deviceId()));
+        } finally {
+            historyTimer.stop(meters.timer("sentinel.fraud.history.lookup"));
+        }
 
-        Assessment assessment = engine.assess(
-                new RiskContext(facts, recent, knownDevices, blacklistMatches(request)));
+        Assessment assessment = engine.assess(new RiskContext(
+                facts, List.of(), Set.of(), blacklistMatches(request), history));
 
         TransactionEntity entity = new TransactionEntity(id, request.externalId(), key, request.accountId(),
                 request.merchantId(), request.amount(), request.currency(), request.country(),
@@ -153,8 +171,4 @@ public class IngestionService {
         return matches;
     }
 
-    private static TxFacts toFacts(TransactionEntity t) {
-        return new TxFacts(t.getId().toString(), t.getAccountId(), t.getMerchantId(), t.getAmount(),
-                t.getCurrency(), t.getCountry(), t.getDeviceId(), t.getOccurredAt());
-    }
 }

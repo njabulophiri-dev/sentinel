@@ -9,4 +9,5 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record LoginThrottleProperties(
         @DefaultValue("5") int maxFailuresPerUser,
         @DefaultValue("30") int maxFailuresPerIp,
+        @DefaultValue("30") int maxFailuresPerAccount,
         @DefaultValue("10m") Duration window) {}
