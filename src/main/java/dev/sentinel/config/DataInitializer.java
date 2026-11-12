@@ -6,6 +6,7 @@ import dev.sentinel.persistence.UserRepository;
 import java.time.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,7 +37,7 @@ class DataInitializer implements ApplicationRunner {
         create("service", properties.servicePassword(), Role.SERVICE);
     }
 
-    private void create(String username, String password, Role role) {
+    private void create(String username, @Nullable String password, Role role) {
         if (password == null || password.isBlank() || users.findByUsername(username).isPresent()) {
             return;
         }

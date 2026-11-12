@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -68,7 +69,7 @@ public class AuthService {
                     Math.max(1, wait.toSeconds()));
         }
 
-        UserEntity user = users.findByUsername(request.username()).orElse(null);
+        @Nullable UserEntity user = users.findByUsername(request.username()).orElse(null);
         boolean passwordMatches = encoder.matches(request.password(), user != null ? user.getPasswordHash() : dummyHash);
         if (user == null || !user.isEnabled() || !passwordMatches) {
             attempts.recordFailure(ipKey, throttle.window());

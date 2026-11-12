@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,12 +36,14 @@ public class TransactionQueryService {
 
     public PageView<TransactionView> list(int page, int size) {
         Page<TransactionEntity> found = transactions.findAll(
-                PageParams.of(page, size, Sort.by(Sort.Direction.DESC, "receivedAt")));
-        List<UUID> ids = found.getContent().stream().map(TransactionEntity::getId).toList();
+                PageParams.of(page, size,
+                        Sort.by(Sort.Direction.DESC,
+                                TypedPropertyPath.path((TransactionEntity transaction) -> transaction.getReceivedAt()))));
+        List<UUID> ids = found.getContent().stream().map(transaction -> transaction.getId()).toList();
         // One query for every row's reasons, instead of one query per row.
         Map<UUID, List<RuleHitEntity>> hitsById = ids.isEmpty() ? Map.of()
                 : ruleHits.findByTransactionIdIn(ids).stream()
-                        .collect(Collectors.groupingBy(RuleHitEntity::getTransactionId));
+                        .collect(Collectors.groupingBy(hit -> hit.getTransactionId()));
         List<TransactionView> items = found.getContent().stream()
                 .map(t -> ViewMapper.transaction(t, hitsById.getOrDefault(t.getId(), List.of())))
                 .toList();

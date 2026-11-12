@@ -10,7 +10,7 @@ public class TotalsReport {
     static SortedMap<String, BigDecimal> totalsByCategory(List<Transaction> transactions) {
         SortedMap<String, BigDecimal> totals = new TreeMap<>();
         for (Transaction tx : transactions) {
-            totals.merge(tx.category(), tx.amount(), BigDecimal::add);
+            totals.merge(tx.category(), tx.amount(), (total, amount) -> total.add(amount));
         }
         return totals;
     }

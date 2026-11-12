@@ -5,13 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -33,7 +33,7 @@ class DemoSeedIT {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
     @Autowired
     MockMvc mvc;
@@ -47,7 +47,7 @@ class DemoSeedIT {
                         .content("{\"username\":\"analyst\",\"password\":\"analyst-test-pass\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
-        return json.readTree(result.getResponse().getContentAsString()).get("accessToken").asText();
+        return json.readTree(result.getResponse().getContentAsString()).get("accessToken").asString();
     }
 
     @Test
@@ -63,7 +63,7 @@ class DemoSeedIT {
         Set<String> rulesSeen = new HashSet<>();
         for (JsonNode tx : items) {
             for (JsonNode reason : tx.get("reasons")) {
-                rulesSeen.add(reason.get("ruleId").asText());
+                rulesSeen.add(reason.get("ruleId").asString());
             }
         }
         assertTrue(rulesSeen.containsAll(Set.of(

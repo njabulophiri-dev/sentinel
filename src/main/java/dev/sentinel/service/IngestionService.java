@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Objects;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -93,7 +94,8 @@ public class IngestionService {
                 request.amount().setScale(2).toPlainString(), request.currency(), request.country(),
                 request.deviceId(), request.occurredAt().toString());
         try {
-            Result result = writeTx.execute(status -> create(idempotencyKey, request, hash));
+            Result result = Objects.requireNonNull(writeTx.execute(status -> create(idempotencyKey, request, hash)),
+                    "Write transaction returned no result");
             if (!result.replayed()) {
                 meters.counter("sentinel.decisions", "decision", result.transaction().decision().name())
                         .increment();
@@ -101,7 +103,9 @@ public class IngestionService {
             return result;
         } catch (DataIntegrityViolationException e) {
             // Lost a race with an identical request: return what the winner stored.
-            Optional<Result> existing = readTx.execute(status -> findReplay(idempotencyKey, hash));
+            Optional<Result> existing = Objects.requireNonNull(
+                    readTx.execute(status -> findReplay(idempotencyKey, hash)),
+                    "Read transaction returned no result");
             return existing.orElseThrow(() -> e);
         }
     }
@@ -131,7 +135,7 @@ public class IngestionService {
                             at.minus(properties.cardTestingWindow()), at, properties.cardTestingMaxAmount()),
                     transactions.findFirstByAccountIdAndCountryNotAndOccurredAtBetweenOrderByOccurredAtDesc(
                             request.accountId(), request.country(), at.minus(properties.countryWindow()), at)
-                            .map(TransactionEntity::getCountry).orElse(null),
+                            .map(transaction -> transaction.getCountry()).orElse(null),
                     transactions.existsByAccountIdAndDeviceIdIsNotNull(request.accountId()),
                     request.deviceId() != null
                             && transactions.existsByAccountIdAndDeviceId(request.accountId(), request.deviceId()));

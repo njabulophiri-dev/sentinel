@@ -37,10 +37,10 @@ public class TransactionCli {
         // Cross-check: sum the map's values and sum the transactions directly.
         // If they disagree, a category was dropped or double-counted. Fail loud.
         BigDecimal fromTotals = totals.values().stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, (total, amount) -> total.add(amount));
         BigDecimal fromTransactions = valid.stream()
-                .map(Transaction::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(transaction -> transaction.amount())
+                .reduce(BigDecimal.ZERO, (total, amount) -> total.add(amount));
 
         if (fromTotals.compareTo(fromTransactions) != 0) {
             throw new IllegalStateException(

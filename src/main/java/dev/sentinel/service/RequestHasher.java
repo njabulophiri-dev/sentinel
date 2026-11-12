@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Fingerprints a request so a retried Idempotency-Key can be told apart from a key reused for a
@@ -13,7 +14,7 @@ public final class RequestHasher {
 
     private RequestHasher() {}
 
-    public static String hash(String... parts) {
+    public static String hash(@Nullable String... parts) {
         StringBuilder canonical = new StringBuilder();
         for (String part : parts) {
             String value = part == null ? "" : part;

@@ -8,15 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import dev.sentinel.engine.rules.BlacklistRule;
 import dev.sentinel.engine.rules.HighAmountRule;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+@NullMarked
 class FraudEngineTest {
 
     @Test
@@ -64,7 +65,8 @@ class FraudEngineTest {
         RiskContext c = new RiskContext(tx("A", "7500.00", "ZA", "DEV-1", NOW),
                 List.of(TestData.minutesAgo("R", 5, "100.00", "GB")), Set.of(), Set.of());
         Assessment a = defaultEngine().assess(c);
-        assertEquals(List.of("HIGH_AMOUNT", "COUNTRY_CHANGE"), a.hits().stream().map(RuleHit::ruleId).toList());
+        assertEquals(List.of("HIGH_AMOUNT", "COUNTRY_CHANGE"),
+                a.hits().stream().map(hit -> hit.ruleId()).toList());
         assertEquals(Decision.DECLINE, a.decision()); // 40 + 45 = 85
     }
 
@@ -75,7 +77,7 @@ class FraudEngineTest {
 
     @Test
     void thresholdsMustBeOrdered() {
-        FraudRule rule = new BlacklistRule(100);
+        FraudRule rule = new HighAmountRule(new BigDecimal("1"), new BigDecimal("2"), 10, 20);
         assertThrows(IllegalArgumentException.class, () -> new FraudEngine(List.of(rule), 80, 40));
         assertThrows(IllegalArgumentException.class, () -> new FraudEngine(List.of(rule), 0, 80));
         assertThrows(IllegalArgumentException.class, () -> new FraudEngine(List.of(rule), 40, 101));

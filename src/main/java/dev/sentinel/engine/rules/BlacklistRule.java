@@ -1,6 +1,5 @@
 package dev.sentinel.engine.rules;
 
-import dev.sentinel.engine.BlacklistKind;
 import dev.sentinel.engine.FraudRule;
 import dev.sentinel.engine.RiskContext;
 import dev.sentinel.engine.RuleHit;
@@ -31,7 +30,7 @@ public final class BlacklistRule implements FraudRule {
             return Optional.empty();
         }
         String what = c.blacklisted().stream()
-                .sorted(Comparator.comparing(BlacklistKind::name))
+                .sorted(Comparator.comparing(kind -> kind.name()))
                 .map(k -> k.name().toLowerCase())
                 .collect(Collectors.joining(", "));
         return Optional.of(new RuleHit(ID, score, "Blacklisted " + what));

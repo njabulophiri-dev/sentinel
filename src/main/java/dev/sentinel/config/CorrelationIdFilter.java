@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -22,7 +23,8 @@ class CorrelationIdFilter extends OncePerRequestFilter {
     private static final Pattern SAFE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull FilterChain chain)
             throws ServletException, IOException {
         String incoming = request.getHeader(HEADER);
         // Only accept simple ids from callers, so nobody can forge log lines with a crafted header.

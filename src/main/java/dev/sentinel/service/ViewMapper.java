@@ -18,8 +18,8 @@ final class ViewMapper {
 
     static TransactionView transaction(TransactionEntity t, List<RuleHitEntity> hits) {
         List<ReasonView> reasons = hits.stream()
-                .sorted(Comparator.comparingInt(RuleHitEntity::getScore).reversed()
-                        .thenComparing(RuleHitEntity::getRuleId))
+                .sorted(Comparator.comparingInt((RuleHitEntity hit) -> hit.getScore()).reversed()
+                        .thenComparing(hit -> hit.getRuleId()))
                 .map(h -> new ReasonView(h.getRuleId(), h.getScore(), h.getReason()))
                 .toList();
         return new TransactionView(t.getId(), t.getExternalId(), t.getAccountId(), t.getMerchantId(),
