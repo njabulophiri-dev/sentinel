@@ -82,7 +82,7 @@ describe('analyst workflow', () => {
 
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'analyst' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'analyst-pass' } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in to sentinel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByRole('heading', { name: 'Risk inbox' })).toBeTruthy();
     expect(await screen.findByRole('button', { name: 'Open alert 41 for account AC-42' })).toBeTruthy();
@@ -117,7 +117,7 @@ describe('analyst workflow', () => {
 
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'analyst' } });
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong' } });
-    fireEvent.click(screen.getByRole('button', { name: /sign in to sentinel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect((await screen.findByRole('alert')).textContent).toContain(
       'Too many attempts. Wait a little before trying again.',

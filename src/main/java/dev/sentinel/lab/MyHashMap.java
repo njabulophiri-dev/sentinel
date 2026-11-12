@@ -11,7 +11,6 @@ package dev.sentinel.lab;
  *
  * Work through MyHashMapTest one test at a time: make one go green, then the next.
  */
-@SuppressWarnings("unchecked")
 public class MyHashMap<K, V> {
 
     private static final int INITIAL_CAPACITY = 16;
@@ -29,8 +28,7 @@ public class MyHashMap<K, V> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private Node<K, V>[] buckets = (Node<K, V>[]) new Node[INITIAL_CAPACITY];
+    private Node<K, V>[] buckets = newBucketArray(INITIAL_CAPACITY);
     private int size;
 
     /** Insert or overwrite. Returns the previous value, or null if the key was new. */
@@ -117,7 +115,7 @@ public class MyHashMap<K, V> {
     private void resize() {
         Node<K, V>[] oldBuckets = buckets;
         int newCapacity = 2*capacity();
-        Node<K, V>[] newBuckets = (Node<K, V>[]) new Node[newCapacity];
+        Node<K, V>[] newBuckets = newBucketArray(newCapacity);
 
         for (int i = 0; i < oldBuckets.length; i++) {
             Node<K, V> current = oldBuckets[i];
@@ -130,5 +128,10 @@ public class MyHashMap<K, V> {
             }
         }
         buckets = newBuckets;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K, V> Node<K, V>[] newBucketArray(int capacity) {
+        return (Node<K, V>[]) new Node[capacity];
     }
 }

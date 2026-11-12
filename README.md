@@ -5,7 +5,7 @@ Merchants send transactions; Sentinel scores each one in real time and answers
 **APPROVE**, **REVIEW** or **DECLINE**, with a plain-English reason for every point of risk.
 Risky transactions land in a queue where analysts confirm fraud or clear them.
 
-**Stack:** Java 21, Spring Boot 3.5, PostgreSQL, Flyway, Spring Security (JWT), React + TypeScript, Docker, GitHub Actions.
+**Stack:** Java 21, Spring Boot 4.1.2, PostgreSQL, Flyway, Spring Security (JWT), React + TypeScript, Docker, GitHub Actions.
 
 **Live demo:** see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for how it is deployed (https://sentinel-gq67.onrender.com/).
 

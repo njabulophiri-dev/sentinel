@@ -3,6 +3,7 @@ package dev.sentinel.engine;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 /** The facts about one transaction that rules are allowed to look at. No card numbers, ever. */
 public record TxFacts(
@@ -12,7 +13,7 @@ public record TxFacts(
         BigDecimal amount,
         String currency,
         String country,
-        String deviceId,
+        @Nullable String deviceId,
         Instant occurredAt) {
 
     public TxFacts {

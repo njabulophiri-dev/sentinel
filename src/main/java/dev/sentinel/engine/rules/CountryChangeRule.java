@@ -48,7 +48,7 @@ public final class CountryChangeRule implements FraudRule {
         Optional<TxFacts> other = c.recent().stream()
                 .filter(t -> !t.occurredAt().isBefore(from))
                 .filter(t -> !t.country().equals(c.tx().country()))
-                .max(Comparator.comparing(TxFacts::occurredAt));
+                .max(Comparator.comparing(facts -> facts.occurredAt()));
         return other.map(t -> new RuleHit(ID, score, "Account used in %s and %s within %d minutes"
                 .formatted(t.country(), c.tx().country(), window.toMinutes())));
     }

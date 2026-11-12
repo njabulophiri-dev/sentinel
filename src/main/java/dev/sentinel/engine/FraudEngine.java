@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Runs every rule, adds up the scores (capped at 100) and turns the total into a decision.
@@ -21,7 +22,7 @@ public final class FraudEngine {
     private final int declineThreshold;
     private final Duration lookback;
 
-    public FraudEngine(List<FraudRule> rules, int reviewThreshold, int declineThreshold) {
+    public FraudEngine(@Nullable List<FraudRule> rules, int reviewThreshold, int declineThreshold) {
         if (rules == null || rules.isEmpty()) {
             throw new IllegalArgumentException("At least one rule is required");
         }
@@ -38,7 +39,7 @@ public final class FraudEngine {
         this.reviewThreshold = reviewThreshold;
         this.declineThreshold = declineThreshold;
         this.lookback = rules.stream()
-                .map(FraudRule::lookback)
+                .map(rule -> rule.lookback())
                 .max(Comparator.naturalOrder())
                 .orElse(Duration.ZERO);
     }

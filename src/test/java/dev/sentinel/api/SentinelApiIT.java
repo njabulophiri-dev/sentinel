@@ -8,8 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Instant;
 import java.util.Set;
@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
@@ -28,7 +28,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -44,7 +44,7 @@ class SentinelApiIT {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
     @Autowired
     MockMvc mvc;
@@ -71,7 +71,7 @@ class SentinelApiIT {
                         .content("{\"username\":\"%s\",\"password\":\"%s\"}".formatted(username, password)))
                 .andExpect(status().isOk())
                 .andReturn();
-        return json.readTree(result.getResponse().getContentAsString()).get("accessToken").asText();
+        return json.readTree(result.getResponse().getContentAsString()).get("accessToken").asString();
     }
 
     private static RequestPostProcessor clientIp(String ip) {
@@ -187,7 +187,7 @@ class SentinelApiIT {
                 body(account(), "100.00", "ZA", "DEV-1", Instant.now()));
         assertEquals(201, result.getResponse().getStatus());
         JsonNode tx = read(result);
-        assertEquals("APPROVE", tx.get("decision").asText());
+        assertEquals("APPROVE", tx.get("decision").asString());
         assertEquals(0, tx.get("riskScore").asInt());
     }
 
@@ -207,8 +207,8 @@ class SentinelApiIT {
                 body(account(), "7500.00", "ZA", "DEV-1", Instant.now()));
         assertEquals(201, result.getResponse().getStatus());
         JsonNode tx = read(result);
-        assertEquals("REVIEW", tx.get("decision").asText());
-        assertEquals("HIGH_AMOUNT", tx.get("reasons").get(0).get("ruleId").asText());
+        assertEquals("REVIEW", tx.get("decision").asString());
+        assertEquals("HIGH_AMOUNT", tx.get("reasons").get(0).get("ruleId").asString());
     }
 
     @Test
@@ -216,16 +216,18 @@ class SentinelApiIT {
         String acc = account();
         String token = service();
         Instant start = Instant.now().minusSeconds(120);
-        JsonNode last = null;
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
             MvcResult r = ingest(token, UUID.randomUUID().toString(),
                     body(acc, "50.00", "ZA", "DEV-1", start.plusSeconds(i * 10L)));
             assertEquals(201, r.getResponse().getStatus());
-            last = read(r);
         }
+        MvcResult sixth = ingest(token, UUID.randomUUID().toString(),
+                body(acc, "50.00", "ZA", "DEV-1", start.plusSeconds(50)));
+        assertEquals(201, sixth.getResponse().getStatus());
+        JsonNode last = read(sixth);
         boolean hasVelocity = false;
         for (JsonNode reason : last.get("reasons")) {
-            hasVelocity |= "VELOCITY".equals(reason.get("ruleId").asText());
+            hasVelocity |= "VELOCITY".equals(reason.get("ruleId").asString());
         }
         assertTrue(hasVelocity, "expected a VELOCITY hit but got " + last);
     }
@@ -242,7 +244,7 @@ class SentinelApiIT {
         MvcResult result = ingest(service(), UUID.randomUUID().toString(),
                 body(acc, "100.00", "ZA", "DEV-1", Instant.now()));
         JsonNode tx = read(result);
-        assertEquals("DECLINE", tx.get("decision").asText());
+        assertEquals("DECLINE", tx.get("decision").asString());
         assertEquals(100, tx.get("riskScore").asInt());
     }
 
@@ -353,7 +355,7 @@ class SentinelApiIT {
     void anAnalystCanResolveAnAlertOnlyOnce() throws Exception {
         MvcResult created = ingest(service(), UUID.randomUUID().toString(),
                 body(account(), "7500.00", "ZA", "DEV-1", Instant.now()));
-        String txId = read(created).get("id").asText();
+        String txId = read(created).get("id").asString();
 
         String analystToken = analyst();
         MvcResult alerts = mvc.perform(get("/api/v1/alerts?status=OPEN&size=100")
@@ -362,7 +364,7 @@ class SentinelApiIT {
                 .andReturn();
         long alertId = -1;
         for (JsonNode item : read(alerts).get("items")) {
-            if (txId.equals(item.get("transaction").get("id").asText())) {
+            if (txId.equals(item.get("transaction").get("id").asString())) {
                 alertId = item.get("id").asLong();
             }
         }

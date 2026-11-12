@@ -3,6 +3,7 @@ package dev.sentinel.engine;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Everything a rule needs to judge one transaction. The caller supplies history data;
@@ -19,7 +20,7 @@ public record RiskContext(
         List<TxFacts> recent,
         Set<String> knownDevices,
         Set<BlacklistKind> blacklisted,
-        RiskHistory history) {
+        @Nullable RiskHistory history) {
 
     public RiskContext(TxFacts tx, List<TxFacts> recent, Set<String> knownDevices,
                        Set<BlacklistKind> blacklisted) {

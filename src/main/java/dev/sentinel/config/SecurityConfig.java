@@ -12,7 +12,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,7 +71,7 @@ class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(authorities);
 
         http
-                .csrf(AbstractHttpConfigurer::disable) // stateless API: no cookies, so no CSRF surface
+                .csrf(csrf -> csrf.disable()) // stateless API: no cookies, so no CSRF surface
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a

@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -40,21 +42,30 @@ public class AlertService {
     }
 
     @Transactional(readOnly = true)
-    public PageView<AlertView> list(AlertStatus status, int page, int size) {
-        var pageRequest = PageParams.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public PageView<AlertView> list(@Nullable AlertStatus status, int page, int size) {
+        var pageRequest = PageParams.of(page, size,
+                Sort.by(Sort.Direction.DESC,
+                        TypedPropertyPath.path((AlertEntity alert) -> alert.getCreatedAt())));
         Page<AlertEntity> found = status == null ? alerts.findAll(pageRequest) : alerts.findByStatus(status, pageRequest);
 
-        List<UUID> txIds = found.getContent().stream().map(AlertEntity::getTransactionId).toList();
+        List<UUID> txIds = found.getContent().stream().map(alert -> alert.getTransactionId()).toList();
         Map<UUID, TransactionEntity> txById = txIds.isEmpty() ? Map.of()
                 : transactions.findAllById(txIds).stream()
-                        .collect(Collectors.toMap(TransactionEntity::getId, Function.identity()));
+                        .collect(Collectors.toMap(transaction -> transaction.getId(), Function.identity()));
         Map<UUID, List<RuleHitEntity>> hitsById = txIds.isEmpty() ? Map.of()
                 : ruleHits.findByTransactionIdIn(txIds).stream()
-                        .collect(Collectors.groupingBy(RuleHitEntity::getTransactionId));
+                        .collect(Collectors.groupingBy(hit -> hit.getTransactionId()));
 
         List<AlertView> items = found.getContent().stream()
-                .map(a -> ViewMapper.alert(a, ViewMapper.transaction(
-                        txById.get(a.getTransactionId()), hitsById.getOrDefault(a.getTransactionId(), List.of()))))
+                .map(a -> {
+                    UUID txId = a.getTransactionId();
+                    TransactionEntity tx = txById.get(txId);
+                    if (tx == null) {
+                        throw new IllegalStateException("Alert " + a.getId() + " has no transaction");
+                    }
+                    return ViewMapper.alert(a,
+                            ViewMapper.transaction(tx, hitsById.getOrDefault(txId, List.of())));
+                })
                 .toList();
         return new PageView<>(items, found.getNumber(), found.getSize(), found.getTotalElements(),
                 found.getTotalPages());
